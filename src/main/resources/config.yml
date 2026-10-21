@@ -1,0 +1,41 @@
+language: ru
+defaults:
+  min-players: 2
+  max-players: 16
+  min-hunters: 1
+  max-hunters: 3
+  players-per-hunter: 4
+  lobby-countdown: 30
+  hide-seconds: 30
+  seek-seconds: 300
+  end-seconds: 8
+  lock-seconds: 2.0
+  prop-scale: 0.55
+  hunter-damage: 5.0
+  miss-damage: 1.0
+  hunter-heal-on-hit: 2.0
+  hunter-reach: 4.0
+  hit-cooldown-ticks: 8
+  found-become-hunters: true
+  taunt-cooldown: 20
+  taunt-time-bonus: 5
+  taunt-floor: 30
+  auto-taunt: 60
+  whistle-cooldown: 45
+  change-cooldown: 20
+taunt-sounds:
+  - entity.cat.ambient
+  - entity.chicken.ambient
+  - entity.pig.ambient
+  - entity.villager.ambient
+  - entity.fox.ambient
+  - entity.parrot.ambient
+  - entity.goat.screaming.ambient
+  - entity.frog.ambient
+  - block.note_block.bell
+  - block.note_block.didgeridoo
+allowed-commands:
+  - msg
+  - tell
+  - w
+  - r

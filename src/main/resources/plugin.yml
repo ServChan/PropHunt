@@ -1,0 +1,13 @@
+name: PropHunt
+version: '${version}'
+main: org.lts.prophunt.PropHunt
+api-version: '26.3'
+authors: [LTS]
+description: Prop hunt minigame - props turn into blocks from the map's own set, 1-3 hunters search for them
+permissions:
+  prophunt.play:
+    default: true
+  prophunt.admin:
+    default: op
+  prophunt.bypass.commands:
+    default: op
