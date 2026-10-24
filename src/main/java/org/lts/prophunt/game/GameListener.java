@@ -8,6 +8,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -15,6 +16,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
@@ -22,9 +25,11 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -33,6 +38,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
+import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.lts.prophunt.PropHunt;
 import org.lts.prophunt.core.Tools.Tool;
@@ -190,6 +196,48 @@ public final class GameListener implements Listener {
                 event.getEntity().setFireTicks(0);
             }
         }
+    }
+
+    @EventHandler(priority = EventPriority.LOW)
+    public void onAttack(EntityDamageByEntityEvent event) {
+        if (game(attacker(event.getDamager())) != null) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOW)
+    public void onHangingBreak(HangingBreakByEntityEvent event) {
+        if (game(attacker(event.getRemover())) != null) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOW)
+    public void onVehicleDamage(VehicleDamageEvent event) {
+        if (game(attacker(event.getAttacker())) != null) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOW)
+    public void onArmorStand(PlayerArmorStandManipulateEvent event) {
+        if (games.of(event.getPlayer()) != null) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOW)
+    public void onInteractAt(PlayerInteractAtEntityEvent event) {
+        if (games.of(event.getPlayer()) != null) {
+            event.setCancelled(true);
+        }
+    }
+
+    private static Entity attacker(Entity entity) {
+        if (entity instanceof Projectile projectile && projectile.getShooter() instanceof Entity shooter) {
+            return shooter;
+        }
+        return entity;
     }
 
     @EventHandler(priority = EventPriority.LOW)

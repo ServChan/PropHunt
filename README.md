@@ -3,7 +3,7 @@
 Мини-игра «Прятки» (prop hunt) для Purpur и Paper 26.3. Часть игроков становится блоками из набора, который задаётся для каждой карты отдельно, а 1–3 охотника ищут их и бьют мечом.
 
 - Сервер: Purpur или Paper **26.3**, Java 25. Других плагинов не нужно (ни LibsDisguises, ни ProtocolLib).
-- Сборка: `.\gradlew.bat build` → `build/libs/PropHunt-1.0.1.jar`.
+- Сборка: `.\gradlew.bat build` → `build/libs/PropHunt-1.0.2.jar`.
 - Тестовый сервер: `.\gradlew.bat runServer` (Paper 26.3).
 
 ## Как идёт раунд

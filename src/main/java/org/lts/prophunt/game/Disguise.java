@@ -19,6 +19,8 @@ final class Disguise {
 
     private final Plugin plugin;
     private final Player owner;
+    private static final double SNAP_DISTANCE_SQUARED = 4.0;
+
     private BlockData block;
     private boolean copied;
     private BlockDisplay display;
@@ -57,20 +59,25 @@ final class Disguise {
     }
 
     void follow() {
-        if (display == null || !display.isValid()) {
-            spawn();
+        if (solid()) {
             return;
         }
-        if (solid()) {
+        if (display == null || !display.isValid()) {
+            spawn();
             return;
         }
         Location at = owner.getLocation();
         if (at.getX() == lastX && at.getY() == lastY && at.getZ() == lastZ) {
             return;
         }
+        double dx = at.getX() - lastX;
+        double dy = at.getY() - lastY;
+        double dz = at.getZ() - lastZ;
+        boolean jump = Double.isNaN(lastX) || dx * dx + dy * dy + dz * dz > SNAP_DISTANCE_SQUARED;
         lastX = at.getX();
         lastY = at.getY();
         lastZ = at.getZ();
+        display.setTeleportDuration(jump ? 0 : 2);
         display.teleport(displayLocation(at));
     }
 

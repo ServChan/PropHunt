@@ -4,9 +4,12 @@ import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -72,10 +75,22 @@ public final class PropHunt extends JavaPlugin {
 
     public void reload() {
         games.shutdown();
+        flushIo();
         reloadConfig();
         loadSettings();
         arenas.load();
         games.start();
+    }
+
+    private void flushIo() {
+        try {
+            io.submit(() -> {
+            }).get(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException | TimeoutException e) {
+            getLogger().log(Level.WARNING, "Pending arena saves did not finish before reload", e);
+        }
     }
 
     private void loadSettings() {

@@ -110,7 +110,7 @@ public final class Game {
     }
 
     boolean join(Player player) {
-        if (!busy() && players.size() >= settings.maxPlayers()) {
+        if (players.size() >= settings.maxPlayers()) {
             msg.send(player, "errors.game-full", Messages.p("arena", arena.id()));
             return false;
         }
@@ -222,7 +222,7 @@ public final class Game {
     void second() {
         switch (phase) {
             case WAITING -> {
-                if (players.size() >= settings.minPlayers()) {
+                if (players.size() >= settings.minPlayers() && arena.problems().isEmpty()) {
                     phase = Phase.STARTING;
                     countdown = settings.lobbyCountdown();
                     broadcast("game.countdown", Messages.p("seconds", countdown));

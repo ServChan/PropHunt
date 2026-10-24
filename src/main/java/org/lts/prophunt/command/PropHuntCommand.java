@@ -224,19 +224,29 @@ public final class PropHuntCommand implements BasicCommand {
                 throw new Failure("errors.no-arenas");
             }
             arena = open.getFirst();
+            int bestScore = Integer.MIN_VALUE;
             for (Arena candidate : open) {
-                Game game = plugin.games().existing(candidate);
-                if (game != null && !game.busy() && game.size() < game.settings().maxPlayers()) {
-                    Game best = plugin.games().existing(arena);
-                    if (best == null || best.busy() || game.size() > best.size()) {
-                        arena = candidate;
-                    }
+                int score = joinScore(candidate);
+                if (score > bestScore) {
+                    bestScore = score;
+                    arena = candidate;
                 }
             }
         } else {
             arena = arena(name);
         }
         plugin.games().join(player, arena);
+    }
+
+    private int joinScore(Arena arena) {
+        Game game = plugin.games().existing(arena);
+        if (game == null) {
+            return arena.problems().isEmpty() ? 0 : -3000;
+        }
+        if (game.size() >= game.settings().maxPlayers()) {
+            return -2000;
+        }
+        return game.busy() ? -1000 + game.size() : game.size();
     }
 
     private void create(Player player, String name) {

@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.lts"
-version = "1.0.1"
+version = "1.0.2"
 description = "PropHunt"
 
 java {
