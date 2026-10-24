@@ -1,71 +1,91 @@
 # PropHunt
 
-Мини-игра «Прятки» (prop hunt) для Purpur и Paper 26.3. Часть игроков становится блоками из набора, который задаётся для каждой карты отдельно, а 1–3 охотника ищут их и бьют мечом.
+[![Minecraft Version](https://img.shields.io/badge/Minecraft-26.3-brightgreen?style=flat-square&logo=minecraft)](README.md)
+[![Platform](https://img.shields.io/badge/Platform-Paper%20%7C%20Purpur-blue?style=flat-square)](README.md)
+[![Java Target](https://img.shields.io/badge/Java-25-orange?style=flat-square&logo=openjdk)](README.md)
+[![Plugin Version](https://img.shields.io/badge/Version-1.0.2-purple?style=flat-square)](README.md)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 
-- Сервер: Purpur или Paper **26.3**, Java 25. Других плагинов не нужно (ни LibsDisguises, ни ProtocolLib).
-- Сборка: `.\gradlew.bat build` → `build/libs/PropHunt-1.0.2.jar`.
-- Тестовый сервер: `.\gradlew.bat runServer` (Paper 26.3).
+Prop hunt minigame for Paper and Purpur 26.3: props hide as blocks from a set chosen for each map, and 1–3 hunters search for them with a sword.
 
-## Как идёт раунд
+**Руководство / User guide:** [Русский](docs/USER_GUIDE_RU.md) · [English](docs/USER_GUIDE_EN.md)
 
-1. Игроки входят командой `/ph join [арена]`. Их вещи, позиция, режим игры, здоровье, опыт и эффекты сохраняются и возвращаются после `/ph leave` (или выхода с сервера). Снимок пишется и на диск (`plugins/PropHunt/snapshots/`), поэтому после падения сервера игрок получит всё обратно при следующем входе.
-2. Когда набирается `min-players`, идёт отсчёт `lobby-countdown`. Охотников `ceil(игроки / players-per-hunter)`, но не меньше `min-hunters` и не больше `max-hunters` (по умолчанию 1–3), и хотя бы один игрок всегда остаётся пропом. Кто уже был охотником, в следующих раундах выбирается реже.
-3. **Прятки** (`hide-seconds`): охотники стоят на своей точке ослеплёнными, пропы разбегаются. Проп получает случайный блок из набора карты, уменьшается (`prop-scale`, чтобы пролезать в проёмы высотой в блок) и становится невидим для всех: вместо него другие видят блок, который за ним следует.
-4. Если проп стоит на месте `lock-seconds`, он «замирает»: остальные игроки видят на этом месте настоящий блок, выровненный по сетке, с поворотом по взгляду пропа (лестницы, печи, сундуки). Сдвинулся — снова стал подвижным блоком.
-5. **Поиск** (`seek-seconds`): охотник бьёт мечом. Попадание считается по видимому блоку пропа (до `hunter-reach` блоков, сквозь стены нельзя): отнимает `hunter-damage`, лечит охотника на `hunter-heal-on-hit`, а пропа отталкивает. Удар по настоящему блоку отнимает у охотника `miss-damage`; кто истратил всё здоровье, возвращается на базу.
-6. Найденный проп становится охотником (`found-become-hunters: true`) или зрителем. Охотники побеждают, когда найдены все пропы, пропы — когда кончилось время.
+## Русский
 
-Предметы пропа: **Маскировка** (ПКМ по блоку карты из набора — стать им, ПКМ в воздух — меню набора; во время поиска не чаще раза в `change-cooldown` с) и **Дразнилка** (звук на месте пропа, раунд короче на `taunt-time-bonus` с, но не короче `taunt-floor`). Охотник получает **Свисток**: раз в `whistle-cooldown` с все пропы издают звук. Каждые `auto-taunt` с пропы выдают себя сами. Кровать в 9-м слоте — выход из игры.
+### Что это
 
-Во время игры нельзя ломать и ставить блоки, выбрасывать и подбирать предметы, есть и регенерировать; урон от мира отключён. Из команд доступны `/ph` и список `allowed-commands` (право `prophunt.bypass.commands` снимает ограничение).
+Мини-игра «Прятки» (prop hunt) для сервера. Пропы превращаются в блоки из набора карты, охотники ищут их и бьют мечом. Пропы побеждают, если продержались до конца времени, охотники — если нашли всех.
 
-## Настройка карты
+### Возможности
 
-Все команды — `/ph` (`/prophunt`), право `prophunt.admin`:
+- Свой набор блоков и свои настройки для каждой карты.
+- Замирание: проп, простоявший 2 секунды, становится настоящим на вид блоком, выровненным по сетке и повёрнутым по взгляду.
+- Предметы: маскировка, дразнилка, свисток охотника, выход по кровати.
+- Попадания считает сервер, клиентские моды охотнику не помогают.
+- Мир не меняется: маскировка — сущность-дисплей и фейковые блоки только для участников.
+- Вещи, позиция и состояние игрока сохраняются на диск и возвращаются после игры, даже после падения сервера.
+- Тексты на русском и английском, все правятся в файлах сообщений.
 
-| Команда | Что делает |
-|---|---|
-| `/ph create <арена>` | создать арену в текущем мире |
-| `/ph sethunterspawn <арена>` | точка охотников (обязательно) |
-| `/ph addspawn <арена>` | точка появления пропов, можно несколько (хотя бы одна) |
-| `/ph setlobby <арена>` | лобби ожидания; без него — точка охотников |
-| `/ph pos1 <арена>`, `/ph pos2 <арена>` | углы области карты: за её пределы игроков возвращает; без области границ нет |
-| `/ph addblock <арена> [блок]` | блок для маскировки: названный, тот, на который смотришь, или из руки (до 54) |
-| `/ph removeblock <арена> <блок>`, `/ph blocks <арена>` | убрать блок, показать набор |
-| `/ph set <арена> <ключ> [значение]` | своя настройка для арены; без значения — вернуть общую |
-| `/ph enable <арена>` / `disable` | открыть арену (проверяет, что всё задано) / закрыть |
-| `/ph start <арена>` / `stop` | запустить раунд через 5 с (от 2 игроков) / остановить |
-| `/ph info <арена>`, `/ph delete <арена>`, `/ph reload` | сведения, удаление, перечитать конфиг и арены |
+### Быстрый старт
 
-Игрокам (`prophunt.play`, есть у всех): `/ph join [арена]`, `/ph leave`, `/ph list`, `/ph help`.
+1. Положите `PropHunt-1.0.2.jar` в `plugins/` сервера Paper или Purpur 26.3 и запустите его.
+2. Создайте арену: `/ph create dom`, `/ph sethunterspawn dom`, несколько раз `/ph addspawn dom`, несколько раз `/ph addblock dom <блок>`.
+3. Откройте её: `/ph enable dom`.
+4. Игроки входят командой `/ph join`.
 
-Хорошая карта для пряток — комната или улица, где много одинаковых блоков из набора: бочки, книжные полки, сено, тыквы, ящики-сундуки. Ставьте в набор те блоки, которые на карте действительно встречаются.
+Все команды, права и настройки — в [руководстве](docs/USER_GUIDE_RU.md).
 
-## config.yml
+### Требования
 
-- `language` — `ru` или `en` (`messages_ru.yml`, `messages_en.yml` в папке плагина).
-- `defaults` — общие значения настроек, любую можно переопределить на арене через `/ph set`:
+Paper или Purpur 26.3, Java 25. Других плагинов не нужно. Folia не поддерживается.
 
-| Ключ | По умолчанию | Смысл |
-|---|---|---|
-| `min-players`, `max-players` | 2, 16 | игроков для старта и максимум |
-| `min-hunters`, `max-hunters`, `players-per-hunter` | 1, 3, 4 | число охотников |
-| `lobby-countdown`, `hide-seconds`, `seek-seconds`, `end-seconds` | 30, 30, 300, 8 | длительности, с |
-| `lock-seconds` | 2.0 | сколько стоять, чтобы замереть |
-| `prop-scale` | 0.55 | размер пропа (атрибут `scale`) |
-| `hunter-damage`, `miss-damage`, `hunter-heal-on-hit` | 5.0, 1.0, 2.0 | в единицах здоровья (2 = сердце) |
-| `hunter-reach`, `hit-cooldown-ticks` | 4.0, 8 | дальность удара и пауза между ударами |
-| `found-become-hunters` | true | найденный проп становится охотником |
-| `taunt-cooldown`, `taunt-time-bonus`, `taunt-floor` | 20, 5, 30 | дразнилка |
-| `auto-taunt`, `whistle-cooldown`, `change-cooldown` | 60, 45, 20 | 0 выключает автодразнилку |
+### Сборка
 
-- `taunt-sounds` — ключи звуков дразнилки, `allowed-commands` — команды, доступные в игре.
+```powershell
+.\gradlew.bat build
+```
 
-Арены лежат в `plugins/PropHunt/arenas/<арена>.yml`.
+Готовый файл: `build/libs/PropHunt-1.0.2.jar`. Тестовый сервер: `.\gradlew.bat runServer`.
 
-## Как это устроено
+---
 
-- Маскировка — сущность `BlockDisplay`, которая каждый тик переносится за пропом; сам игрок скрыт через `hidePlayer`. Замерший проп — фейковый блок (`sendBlockChange`) у всех участников, дисплей при этом скрыт для них; плагин повторяет фейковые блоки раз в секунду и возвращает настоящие при движении и в конце раунда. Мир не меняется.
-- Попадания считает сервер: по взмаху руки (`PlayerArmSwingEvent`) луч от глаз охотника проверяется против блоков пропов и настоящих блоков (`logic/HitPicker`), поэтому клиентские моды не помогут охотнику.
-- Участникам разрешено «летать» (`allowFlight`, сам полёт отменяется), чтобы сервер не выкидывал за стояние на фейковом блоке.
-- Чистая логика с тестами: `logic/Roles`, `Stillness`, `RoundClock`, `HitPicker`, `Facing`, `arena/ArenaSettings`.
+## English
+
+### What It Is
+
+A hide-and-seek (prop hunt) minigame for your server. Props turn into blocks from the map's set, and hunters look for them and hit them with a sword. Props win if they last until time runs out, hunters win if they find everyone.
+
+### Features
+
+- Its own block set and settings for every map.
+- Locking: a prop that stands still for 2 seconds becomes a real-looking block, snapped to the grid and facing the way the prop looks.
+- Items: disguise, taunt, hunter's whistle, leave bed.
+- Hits are worked out on the server, so client mods do not help hunters.
+- The world never changes: disguises are a display entity and fake blocks shown only to players in the game.
+- Items, position and state are saved to disk and returned after the game, even after a server crash.
+- Russian and English texts, all editable in the message files.
+
+### Quick Start
+
+1. Put `PropHunt-1.0.2.jar` into `plugins/` on a Paper or Purpur 26.3 server and start it.
+2. Create an arena: `/ph create house`, `/ph sethunterspawn house`, `/ph addspawn house` a few times, `/ph addblock house <block>` a few times.
+3. Open it: `/ph enable house`.
+4. Players join with `/ph join`.
+
+Every command, permission and setting is in the [user guide](docs/USER_GUIDE_EN.md).
+
+### Requirements
+
+Paper or Purpur 26.3, Java 25. No other plugins needed. Folia is not supported.
+
+### Building
+
+```powershell
+.\gradlew.bat build
+```
+
+Output: `build/libs/PropHunt-1.0.2.jar`. Test server: `.\gradlew.bat runServer`.
+
+## Лицензия / License
+
+[MIT](LICENSE).
